@@ -1,0 +1,316 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="utf-8" />
+    <title>國民法官選任作業</title>
+    <script type="text/javascript" src="jQuery1.11.1.js"></script>
+    <link href="css/reset.css" rel="stylesheet" type="text/css" />
+    <link href="css/index.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript">
+      function MM_swapImgRestore() {
+        //v3.0
+        var i,
+          x,
+          a = document.MM_sr;
+        for (i = 0; a && i < a.length && (x = a[i]) && x.oSrc; i++)
+          x.src = x.oSrc;
+      }
+      function MM_preloadImages() {
+        //v3.0
+        var d = document;
+        if (d.images) {
+          if (!d.MM_p) d.MM_p = new Array();
+          var i,
+            j = d.MM_p.length,
+            a = MM_preloadImages.arguments;
+          for (i = 0; i < a.length; i++)
+            if (a[i].indexOf("#") != 0) {
+              d.MM_p[j] = new Image();
+              d.MM_p[j++].src = a[i];
+            }
+        }
+      }
+      function MM_findObj(n, d) {
+        //v4.01
+        var p, i, x;
+        if (!d) d = document;
+        if ((p = n.indexOf("?")) > 0 && parent.frames.length) {
+          d = parent.frames[n.substring(p + 1)].document;
+          n = n.substring(0, p);
+        }
+        if (!(x = d[n]) && d.all) x = d.all[n];
+        for (i = 0; !x && i < d.forms.length; i++) x = d.forms[i][n];
+        for (i = 0; !x && d.layers && i < d.layers.length; i++)
+          x = MM_findObj(n, d.layers[i].document);
+        if (!x && d.getElementById) x = d.getElementById(n);
+        return x;
+      }
+      function MM_swapImage() {
+        //v3.0
+        var i,
+          j = 0,
+          x,
+          a = MM_swapImage.arguments;
+        document.MM_sr = new Array();
+        for (i = 0; i < a.length - 2; i += 3)
+          if ((x = MM_findObj(a[i])) != null) {
+            document.MM_sr[j++] = x;
+            if (!x.oSrc) x.oSrc = x.src;
+            x.src = a[i + 2];
+          }
+      }
+    </script>
+  </head>
+  <body onload="getCookies()">
+    <div id="main">
+      <div id="header">
+        <div class="logo">國民法官選任作業</div>
+        <div class="total-people">
+          正取<span id="select1"></span>位，備位<span id="select2"></span
+          >位<span id="shadow1"></span><span id="shadow2"></span>。
+        </div>
+      </div>
+      <div id="Container">
+        <!--候選國民法官-->
+        <div id="Area1">
+          <div class="count">
+            應到：<span id="field"></span>　報到：<span id="arrived"></span>
+          </div>
+          <ul id="UL1"></ul>
+        </div>
+        <div class="btn" id="stage">
+          <a
+            href="result.htm"
+            onclick="return checkTrans()"
+            onmouseout="MM_swapImgRestore()"
+            onmouseover="MM_swapImage('Image21','','images/btn_next2.png',1)"
+          >
+            <img
+              src="images/btn_next1.png"
+              alt="電腦抽籤"
+              name="Image21"
+              width="180"
+              height="55"
+              border="0"
+              id="Image21"
+            />
+          </a>
+        </div>
+      </div>
+    </div>
+    <div id="clear"></div>
+  </body>
+</html>
+<script type="text/javascript">
+  var N, arr, s, li, index, num, name;
+  var InterrogaNum; //抽選個別訊問人數
+  var QualifyNum, WaitingNum; //正取及備位人數
+  var Shadow1Num, Shadow2Num; //第一影子團及第二影子團人數
+  var SelectNm; //選任身分
+  var field = 0; //應報到人數
+  var arriveNum = 0; //已報到人數
+  var pickNum = 0; //抽選人數
+  var width = 0; //AREA1球寬度
+  var size = 200; //AREA1字大小
+  var ckCnt = []; //W白B藍K黑
+
+  document.oncontextmenu = function () {
+    return false;
+  };
+  //跑出所需人數
+  function getCookies() {
+    arr = document.cookie.match(
+      new RegExp("(^| )" + "select0" + "=([^;]*)(;|$)")
+    ); //抽選個別訊問人數
+    if (arr != null) {
+      InterrogaNum = arr[2];
+    }
+
+    arr = document.cookie.match(
+      new RegExp("(^| )" + "select1" + "=([^;]*)(;|$)")
+    ); //正取人數
+    if (arr != null) {
+      QualifyNum = arr[2];
+      document.getElementById("select1").innerHTML = QualifyNum;
+    }
+
+    arr = document.cookie.match(
+      new RegExp("(^| )" + "select2" + "=([^;]*)(;|$)")
+    ); //備位人數
+    if (arr != null) {
+      WaitingNum = arr[2];
+      document.getElementById("select2").innerHTML = WaitingNum;
+    }
+
+    arr = document.cookie.match(
+      new RegExp("(^| )" + "shadow1" + "=([^;]*)(;|$)")
+    ); //第一影子團人數
+    if (arr != null) {
+      Shadow1Num = parseInt(arr[2]);
+      if (Shadow1Num > 0) {
+        document.getElementById("shadow1").innerHTML =
+          "，影子團成員" + Shadow1Num + "位";
+      }
+    }
+
+    arr = document.cookie.match(
+      new RegExp("(^| )" + "shadow2" + "=([^;]*)(;|$)")
+    ); //第二影子團人數
+    if (arr != null) {
+      Shadow2Num = parseInt(arr[2]);
+      if (Shadow2Num > 0) {
+        document.getElementById("shadow1").innerHTML =
+          "，第一影子團" + Shadow1Num + "位";
+        document.getElementById("shadow2").innerHTML =
+          "，第二影子團" + Shadow2Num + "位";
+      }
+    }
+
+    arr = document.cookie.match(
+      new RegExp("(^| )" + "field" + "=([^;]*)(;|$)")
+    ); //應到人數
+    if (arr != null) {
+      field = arr[2];
+      if (field < 10) field = "0" + field;
+      document.getElementById("field").innerHTML = field;
+    }
+
+    var arrived = "";
+    arr = document.cookie.match(new RegExp("(^| )" + "B" + "=([^;]*)(;|$)")); //報到人數
+    if (arr != null) {
+      arrived = arr[2];
+    }
+    var arrSelect = arrived.split(",");
+
+    document.getElementById("arrived").innerHTML = "00";
+    //設定報到球寬度及字大小
+    if (0 < field && field < 24) {
+      width = 102;
+      size = 250;
+    } else if (25 < field && field < 31) {
+      width = 89;
+      size = 250;
+    } else if (30 < field && field < 41) {
+      width = 82;
+      size = 250;
+    } else if (40 < field && field < 61) width = 68;
+    else {
+      size = 200;
+      width = 63;
+    }
+
+    /* 記住選過的號碼   */
+    for (var i = 0; i < field; i++) {
+      s = document.getElementById("UL1");
+      li = document.createElement("li");
+      s.appendChild(li);
+      j = i + 1;
+      if ($.inArray(i.toString(), arrSelect) == -1) {
+        ckCnt[i] = "W";
+        li.innerHTML =
+          "<div class='white'>" +
+          j +
+          "</div><img src='images/balls/white.png' width='" +
+          width +
+          "'/>";
+      } else {
+        ckCnt[i] = "B";
+        arriveNum++;
+        li.innerHTML =
+          "<div class='blue'>" +
+          j +
+          "</div><img src='images/balls/blue.png' width='" +
+          width +
+          "'/>";
+      }
+      li.id = i;
+    }
+
+    /* 不記住選過的號碼   */
+    /*
+  for (var i = 0; i < field; i++) {
+            s = document.getElementById('UL1');
+            li = document.createElement("li");
+            ckCnt[i] = "W";
+            s.appendChild(li);
+            j = i + 1;
+            li.innerHTML = "<div class='white'>" + j + "</div><img src='images/balls/white.png' width='" + width + "'/>";
+            li.id = i;
+        }
+  */
+
+    document.getElementById("arrived").innerHTML = arriveNum;
+    $("#Area1 ul li div").css("font-size", size + "%");
+    $("#Area1 ul li div").css("width", width + "px");
+    $("#Area1 ul li div").css("height", width + "px");
+    $("#Area1 ul li div").css("line-height", width + "px");
+    AllNum = QualifyNum + parseInt(WaitingNum);
+  }
+  //報到階段
+  $("#Area1").delegate("li", "click", function () {
+    N = $(this).attr("id");
+    index = parseInt(N) + 1;
+    if (ckCnt[N] == "B") {
+      $("#" + N).html(
+        "<div class='white'>" +
+          index +
+          "</div><img src='images/balls/white.png' width='" +
+          width +
+          "'/>"
+      );
+      arriveNum--;
+      document.getElementById("arrived").innerHTML = arriveNum;
+      ckCnt[N] = "W";
+    } else {
+      $("#" + N).html(
+        "<div>" +
+          index +
+          "</div><img src='images/balls/blue.png' width='" +
+          width +
+          "'/>"
+      );
+      arriveNum++;
+      document.getElementById("arrived").innerHTML = arriveNum;
+      ckCnt[N] = "B";
+    }
+    $("#Area1 ul li div").css("font-size", size + "%");
+    $("#Area1 ul li div").css("width", width + "px");
+    $("#Area1 ul li div").css("height", width + "px");
+    $("#Area1 ul li div").css("line-height", width + "px");
+  });
+  function checkTrans() {
+    pickNum =
+      parseInt(InterrogaNum) + parseInt(Shadow1Num) + parseInt(Shadow2Num);
+    //pickNum = prompt("抽選人數？", pickNum.toString());
+    if (arriveNum) {
+      //if (pickNum > arriveNum) {
+      //alert("報到人數不足!!");
+      //return false;
+      //}
+      //正取+備取人數
+      var num = parseInt(QualifyNum) + parseInt(WaitingNum);
+      //報到人數小於正取+備取人數
+      if (arriveNum < num) {
+        alert("報到人數不足!!");
+        return false;
+      }
+      document.cookie = "pick" + "=" + arriveNum;
+      setCookies();
+      return true;
+    } else return false;
+  }
+  function setCookies() {
+    var cnt = 0;
+    var arrSelect = [];
+    var arrived = "";
+    for (var i = 0; i < field; i++) {
+      //跑迴圈找已報到
+      if (ckCnt[i] == "B") arrived += i + ",";
+    }
+    arrived = arrived.substr(0, arrived.length - 1);
+    now = new Date();
+    now.setTime(now.getTime() + 1 * 24 * 60 * 60 * 1000);
+    expires = "; expires=" + now.toGMTString();
+    document.cookie = "B=" + arrived + expires + "; path=/";
+  }
+</script>

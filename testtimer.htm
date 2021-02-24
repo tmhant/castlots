@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<script src="jQuery1.11.1.js"></script>
+<title>test timer pause continue</title>
+</head>
+
+<body>
+<script>
+var cnt = 0;
+var Tencnt = 0;
+var go = false;
+
+function timer() {
+    if(!go)
+        return;
+    cnt++;
+    if(cnt >= 10){
+        cnt=0;
+        everyTen();
+    }
+    jQuery("#counter").text(cnt);
+    timerid = setTimeout(timer, 1000);
+}
+
+function everyTen(){
+    Tencnt++;
+    jQuery("#Tenr").text(Tencnt);
+    if(Tencnt >= 6){
+      stopTimer();
+      clearTimeout(timerid);
+    }
+}
+
+function stopTimer(){
+    go = false;
+    jQuery("#btnStart").prop("disabled",false);
+    jQuery("#btnStop").prop("disabled",true);
+} 
+function startTimer(){
+    go = true;
+    timer();
+    jQuery("#btnStart").prop("disabled",true);
+    jQuery("#btnStop").prop("disabled",false);
+}
+
+$(function(){
+  jQuery("#prg").html("<h3>Timer Test Program!</h3>");
+})
+
+</script>
+<div id="prg">id program</div>
+<div id="Tenr">id Tenr</div>
+<div id="counter">id counter</div>
+
+<button id="btnStart" type="button" onclick="startTimer()">Click to Start Timer!</button>
+<button id="btnStop" disabled="true" type="button" onclick="stopTimer()">Click to Pause Timer!</button>
+
+</body>
+</html>

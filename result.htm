@@ -1,0 +1,1177 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <title>國民法官選任作業</title>
+    <link href="css/reset.css" rel="stylesheet" type="text/css" />
+    <link href="css/index.css" rel="stylesheet" type="text/css" />
+    <script src="jQuery1.11.1.js"></script>
+
+    <script>
+      $(function () {
+        $(
+          '<audio id="sndEffect"><source src="sound.wav" type="audio/wav"></audio>'
+        ).appendTo("body");
+        //  $('<audio id="sndEffect"><source src="sound.mp3" type="audio/mp3"></audio>').appendTo('body');
+      });
+    </script>
+  </head>
+  <!-- <body onload="getCookies();ranNum();"> 配合增加抽籤第2輪按鈕 - 1070405-->
+  <body onload="getCookies();startTimer(true);">
+    <div id="main">
+      <div id="header">
+        <div class="logo">國民法官選任作業</div>
+        <div class="total-people" id="people">
+          應到<span id="field1"></span>位，報到<span id="arrive1"></span
+          >位，預計抽選<span id="pick1"></span>位，正取<span id="select1"></span
+          >位，備位<span id="select2"></span>位<span id="shadow1"></span
+          ><span id="shadow2"></span>。
+        </div>
+
+        <div class="total-caption" id="caption"></div>
+      </div>
+      <div id="Container">
+        <!--待選任之候選國民法官-->
+        <div id="Area2">
+          <div class="count2">
+            <span id="selected">已抽選：</span><span id="arrived"></span>位
+          </div>
+          <ul id="UL2"></ul>
+        </div>
+        <div id="Area3">
+          <div class="Area31" id="Area31" width="50%">
+            <div class="count3">
+              <span>已拒却：</span><span id="rejected"></span>位
+              <span
+                ><button
+                  type="button"
+                  onclick="resetArea31()"
+                  style="
+                    position: relative;
+                    top: -10px;
+                    width: 60px;
+                    height: 30px;
+                  "
+                >
+                  確認
+                </button></span
+              >
+            </div>
+            <ul id="UL31"></ul>
+          </div>
+          <div class="Area32" id="Area32" width="50%">
+            <div class="count3">
+              <span>已抽選：</span><span id="select32"></span>位
+            </div>
+            <ul id="UL32"></ul>
+          </div>
+        </div>
+        <!--正取-->
+        <div class="Result1" id="Qualify">
+          <ul id="ulQualify">
+            <li class="txt">正取</li>
+          </ul>
+        </div>
+        <!--備位-->
+        <div class="Result2" id="Waiting">
+          <ul id="ulWaiting">
+            <li class="txt">備位</li>
+          </ul>
+        </div>
+
+        <!--增加抽籤第2輪按鈕 - 1070405 -->
+        <div class="btn" id="bindTimer">
+          <button
+            id="btnStart"
+            type="button"
+            onclick="startTimer(true)"
+            style="border-radius: 25%"
+          >
+            <h2>開始抽籤</h2>
+          </button>
+          <button
+            id="btnStop"
+            type="button"
+            onclick="stopTimer(true)"
+            disabled="true"
+            style="border-radius: 25%"
+          >
+            <h2>暫停抽籤</h2>
+          </button>
+          <!--增加"不足加抽"按鈕，但初使不讓它顯示 -->
+          <button
+            id="btnMore"
+            type="button"
+            onclick="enableMoreTimer(true)"
+            style="display: none; border-radius: 25%"
+          >
+            <h2>不足加抽</h2>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div id="clear"></div>
+  </body>
+</html>
+
+<script>
+  var InterrogaNum; //抽選個別訊問人數
+  var QualifyNum, WaitingNum; //正取及備位人數
+  var Shadow1Num, Shadow2Num; //第一影子團及第二影子團人數
+  var AllNum,
+    field,
+    pick,
+    W = 0,
+    Q = 0,
+    id,
+    sort = 0,
+    WS = 0;
+  var allOK = [];
+  var wsOK = [];
+  var csOK = [];
+  var arrSelect = []; //會變動，每一次抽籤時，報到人名單中尚未被抽出來的名單，即可抽籤名單陣列
+  var arrTemp = [];
+  var arrRand = [];
+  var lots = []; //被抽到，即中獎的名單
+  var ckCnt = []; //W白B藍P正取Y備位
+  var deny = []; //拒却人數
+  var width = 0,
+    size = 200;
+  var counter = 0; //正在抽選第幾人
+  // var tm1 =  new Date().getTime();  //配合增加抽籤第2輪按鈕 - 1070405
+  var tm1 = 0; //配合增加抽籤第2輪按鈕 - 1070405
+  var cnt = 0; //抽籤要抽出的人數
+  var arrLen; //報到人數
+  var selStr = "|";
+  var ball, item, timer;
+  var go = false; //配合增加抽籤第2輪按鈕 - 1070405，控制進行抽籤
+  var maxNum = 0; // 最多可抽人數，maxNum = (arrLen > 24)?24:arrLen;
+  var extra = 4; //2次抽籤時，多增加個詢4位候選名額
+  var denyNum = 0; //拒卻人數
+  //var initialShadow2 = 0; //第2次或以上每次加抽時，存放Shadow2Num的初始值
+
+  //取消mouse右鍵
+  document.oncontextmenu = function () {
+    return false;
+  };
+
+  function getCookies() {
+    //抽選個別訊問人數
+    var arr = document.cookie.match(
+      new RegExp("(^| )" + "select0" + "=([^;]*)(;|$)")
+    );
+    if (arr != null) {
+      InterrogaNum = parseInt(arr[2]);
+    }
+    console.log("抽選個別訊問人數:" + InterrogaNum);
+    //正取人數
+    arr = document.cookie.match(
+      new RegExp("(^| )" + "select1" + "=([^;]*)(;|$)")
+    );
+    if (arr != null) {
+      QualifyNum = parseInt(arr[2]);
+      document.getElementById("select1").innerHTML = QualifyNum;
+    }
+    console.log("正取人數:" + QualifyNum);
+    //備位人數
+    arr = document.cookie.match(
+      new RegExp("(^| )" + "select2" + "=([^;]*)(;|$)")
+    );
+    if (arr != null) {
+      WaitingNum = parseInt(arr[2]);
+      document.getElementById("select2").innerHTML = WaitingNum;
+    }
+    console.log("備位人數:" + WaitingNum);
+    //第一影子團人數
+    arr = document.cookie.match(
+      new RegExp("(^| )" + "shadow1" + "=([^;]*)(;|$)")
+    );
+    if (arr != null) {
+      Shadow1Num = parseInt(arr[2]);
+      /* 將第一影子團人數改為增加2次抽籤1批候選人數
+        if (Shadow1Num>0) {
+            document.getElementById("shadow1").innerHTML = "，影子團成員" + Shadow1Num + "位";
+        }
+        */
+    }
+    console.log("第一影子團人數:" + Shadow1Num);
+    //第二影子團人數
+    arr = document.cookie.match(
+      new RegExp("(^| )" + "shadow2" + "=([^;]*)(;|$)")
+    );
+    if (arr != null) {
+      Shadow2Num = parseInt(arr[2]);
+      /* 將第二影子團人數改為增加2次抽籤1批候選人數
+        if (Shadow2Num>0) {
+          document.getElementById("shadow2").innerHTML = "，第二影子團" + Shadow2Num + "位";
+        }
+        */
+    }
+    console.log("第二影子團人數:" + Shadow2Num);
+    if (!Shadow1Num && !Shadow2Num) {
+      document.getElementById("caption").style.backgroundImage =
+        "url('images/caption0.png')";
+    } else if (!Shadow2Num) {
+      document.getElementById("caption").style.backgroundImage =
+        "url('images/caption1.png')";
+    } else {
+      document.getElementById("caption").style.backgroundImage =
+        "url('images/caption.png')";
+    }
+
+    arr = document.cookie.match(new RegExp("(^| )" + "pick" + "=([^;]*)(;|$)"));
+    if (arr != null) {
+      pick = arr[2]; //要抽選的人數(含國民法官、影子團1及影子團2)
+    }
+    console.log("要抽選的人數:" + pick);
+    arr = document.cookie.match(
+      new RegExp("(^| )" + "field" + "=([^;]*)(;|$)")
+    );
+    if (arr != null) {
+      field = arr[2];
+    }
+    console.log("field:" + field);
+    //正取人數+備位人數
+    AllNum = QualifyNum + WaitingNum;
+    for (i = 0; i < AllNum; i++) {
+      allOK[i] = 0;
+    }
+    for (i = 0; i < 16; i++) {
+      wsOK[i] = 0;
+    }
+    var arrived = "";
+    arr = document.cookie.match(new RegExp("(^| )" + "B" + "=([^;]*)(;|$)"));
+    if (arr != null) {
+      arrived = arr[2];
+    }
+    console.log("報到人數:" + arrived);
+    //arrSelect為可抽籤名單陣列，剛開始為報到名單，接著每一次抽籤會變動，即每一次抽籤時，報到人名單中尚未被抽出來的名單待會會變動，即每一次抽籤時，報到人名單中尚未被抽出來的名單
+    arrSelect = arrived.split(",");
+
+    cnt = pick; //總共要抽出來的中獎人數
+    //document.getElementById("arrived").innerHTML = pick;
+
+    if (0 < cnt && cnt < 25) width = 80;
+    else if (20 < cnt && cnt < 34) width = 75;
+    else {
+      width = 50;
+      size = 180;
+    }
+
+    //亂數排列 - arrRand目的: 替候選結果區的球，產生亂數的初始號碼(index)
+    arrLen = arrSelect.length;
+    var i = 0;
+    while (arrRand.length < cnt) {
+      var choice = Math.round(Math.random() * (arrLen - 1));
+      //if ($.inArray(choice,arrRand)==-1) arrRand[i++] = choice;
+      arrRand[i++] = "";
+    }
+
+    //將抽出index加至新陣列 - lots作為存放候選結果區的球的最終中獎號碼
+    for (i = 0; i < arrRand.length; i++)
+      lots[lots.length] = arrSelect[arrRand[i]];
+    for (i = 0; i < cnt; i++) {
+      index = parseInt(lots[i]) + 1;
+      s = document.getElementById("UL2");
+      li = document.createElement("li");
+      s.appendChild(li);
+      if (i < InterrogaNum) ball = "yellow.png";
+      //顯示候選結果區的球
+      else if (i >= InterrogaNum && i < InterrogaNum + Shadow1Num)
+        ball = "red.png";
+      //顯示影子團1候選球
+      else ball = "green.png"; //顯示影子團2候選球
+      //配合增加抽籤第2輪按鈕 - 1070405 (尚未抽籤時，不要在抽籤結果區show號碼)
+      // li.innerHTML = "<div class='no'>"+(parseInt(i)+1)+"</div><div class='ball'><div class='ball'>" + index + "</div></div><img src='images/balls/" + ball + "' width='" + width + "'/>";
+      li.innerHTML =
+        "<div class='no'>" +
+        (parseInt(i) + 1) +
+        "</div><div class='ball'><div class='ball'>" +
+        "" +
+        "</div></div><img src='images/balls/" +
+        ball +
+        "' width='" +
+        width +
+        "'/>";
+      li.id = lots[i];
+      li.name = parseInt(i) + 1;
+      ckCnt[lots[i]] = "B";
+
+      //每4個球添加1條分隔線，因為每4個人一批進行詢問
+      //if (i % 8 == 3 && i + 1 < cnt)
+      //li.insertAdjacentHTML(
+      //"beforeend",
+      //'<span><img src="images/separator.png" width="50%"></span>'
+      //);
+    }
+
+    $("#Area2 ul li div.ball").css("font-size", size + "%");
+    $("#Area2 ul li div.ball").css("width", width + "px");
+    $("#Area2 ul li div.ball").css("height", width + "px");
+    $("#Area2 ul li div.ball").css("line-height", width + "px");
+
+    //處理待選區，顯示空白球
+    s = document.getElementById("UL31");
+    for (i = 0; i < 16; i++) {
+      li = document.createElement("li");
+      li.innerHTML =
+        "<div></div><img src='images/balls/black.png' width='60' />";
+      s.appendChild(li);
+      li.id = "ws" + i;
+    }
+
+    //處理已選區，顯示空白球
+    s = document.getElementById("UL32");
+    for (i = 0; i < 16; i++) {
+      li = document.createElement("li");
+      li.innerHTML =
+        "<div></div><img src='images/balls/black.png' width='60' />";
+      s.appendChild(li);
+      li.id = "cs" + i;
+    }
+
+    //處理正取區，顯示空白球
+    for (i = 0; i < QualifyNum; i++) {
+      s = document.getElementById("ulQualify");
+      li = document.createElement("li");
+      li.innerHTML =
+        "<div></div><img src='images/balls/black.png' width='80' />";
+      s.appendChild(li);
+      li.id = "s" + i;
+    }
+
+    //處理備位區，顯示空白球
+    var font; //在備位區加註解文字用
+    for (i = 0; i < WaitingNum; i++) {
+      font = WaitingSort(i); //在備位區加註解文字
+      s = document.getElementById("ulWaiting");
+      li = document.createElement("li");
+      li.innerHTML =
+        "<div></div><img src='images/balls/black.png' width='80' /><span>" +
+        font +
+        "</span>";
+      s.appendChild(li);
+      li.id = "w" + i;
+    }
+
+    //抽選人數
+    document.getElementById("pick1").innerHTML = pick;
+    //應到人數
+    document.getElementById("field1").innerHTML = field;
+    //報到人數
+    document.getElementById("arrive1").innerHTML = arrLen;
+
+    // 最多可抽人數 = min(arrLen, 24)
+    maxNum = arrLen > 24 ? 24 : arrLen;
+
+    // 程式剛開始，在結果區顯示已抽顯人數為空白
+    document.getElementById("arrived").innerHTML = " "; // 在結果區顯示已抽顯人數為空白
+  }
+
+  function ranNum() {
+    if (!go) {
+      //配合增加抽籤第2輪按鈕 - 1070405
+      $("#Area2 ul li div.ball").eq(counter).html(""); //標籤清空 -- 1070407
+      return; //Do Nothing -- 1070405
+    }
+    if (!tm1) tm1 = new Date().getTime(); //配合增加抽籤第2輪按鈕 - 1070405
+    var tm2 = new Date().getTime();
+    tm = (tm2 - tm1) / 1000;
+    startIdx = parseInt(Math.random() * (arrLen - counter));
+
+    //修改為只顯示正在抽籤的號碼，不顯示所有的	-- 1070407
+    i = 0;
+    //for (i = 0; i < arrLen; i++) {
+    key = startIdx + i;
+    key = key < arrLen ? key : key - arrLen;
+    number = parseInt(arrSelect[key]) + 1;
+    $("#Area2 ul li div.ball")
+      .eq(counter + i)
+      .html(number);
+    //}
+
+    if (tm < 3)
+      //抽1支籤的秒數
+      timer = setTimeout(ranNum, 50);
+    else {
+      if (counter == cnt) {
+        finishWork(true, "完成抽籤"); //抽籤結束，使按鈕失去作用 -- 1070415
+        clearTimeout(timer);
+      } else {
+        tm1 = new Date().getTime();
+        item = parseInt($("#Area2 ul li div.ball").eq(counter).html()) - 1;
+
+        if (counter < InterrogaNum) {
+          // $("#Area2 ul li div.ball").eq(counter).css("color", "DarkSlateGray");
+          $("#Area2 ul li div.ball").eq(counter).css("color", "blue");
+        } else if (
+          counter >= InterrogaNum &&
+          counter < InterrogaNum + Shadow1Num
+        )
+          $("#Area2 ul li div.ball").eq(counter).css("color", "Midnightblue");
+        else $("#Area2 ul li div.ball").eq(counter).css("color", "Indigo");
+
+        $("#Area2 ul li div.ball").eq(counter).css("font-weight", "bold");
+
+        arrSelect.splice($.inArray(item.toString(), arrSelect), 1); //每一次抽籤後，更新可抽籤名單arrSelect
+        lots[counter] = item;
+        ckCnt[lots[counter]] = "B";
+        $("#Area2 ul li").eq(counter).attr("id", lots[counter]);
+        // 播放聲音 - Dong
+        if (sndEffect["play"]) $("#sndEffect")[0].play();
+
+        // 增加語音播放號碼功能 -- 1070405
+        playSpeech(lots[counter] + 1);
+
+        counter++;
+
+        // 更新上頭狀態區
+        displayPeople();
+
+        if (counter == cnt) {
+          finishWork(true, "完成抽籤"); //抽籤結束，使按鈕 立刻 失去作用 -- 1070417
+          clearTimeout(timer);
+        } else {
+          timer = setTimeout(ranNum, 50);
+        }
+      }
+    }
+  }
+
+  // 選取訊問號碼
+  $("#Area2").delegate("li", "click", function () {
+    var hasSeparator = false; //用來存放該球是有分隔線(每列第4球有分隔線)
+    if (WS === 16) alert("選任人數已滿");
+    //if (QualifyNum == Q && WaitingNum == W) alert("選任人數已滿");
+    else {
+      sort = $(this).prop("name"); // sort為新編號(抽到籤的新編號)
+      N = $(this).attr("id");
+      index = parseInt(N) + 1; // index為舊編號(報到前編號)
+      if (isNaN(index)) return; //如果還沒抽籤，就不能選取
+      if (
+        $(this)
+          .html()
+          .search(/ball_mask/i) != -1
+      )
+        return; //如果被拒卻，就不能選取
+      console.log("ckCnt[N]" + ckCnt[N]);
+      if (ckCnt[N] == "W") {
+        //存放此球是否有分隔線的狀態
+        if (
+          $(this)
+            .html()
+            .search(/separator/i) != -1
+        )
+          hasSeparator = true;
+
+        $("#" + N).html(
+          "<div class='no'>" +
+            sort +
+            "</div><div class='ball'>" +
+            index +
+            "</div><img src='images/balls/pink.png' width='" +
+            width +
+            "'/>"
+        );
+        ckCnt[N] = "B";
+      } else if (ckCnt[N] == "B") {
+        //if (Q < QualifyNum) {
+        if (WS < 16) {
+          //存放此球是否有分隔線的狀態
+          if (
+            $(this)
+              .html()
+              .search(/separator/i) != -1
+          )
+            hasSeparator = true;
+          $("#" + N).html(
+            "<div class='no'>" +
+              sort +
+              "</div><div class='ball'>" +
+              index +
+              "</div><img src='images/balls/blue.png' width='" +
+              width +
+              "'/>"
+          );
+          ckCnt[N] = "P";
+          wsOK[WS] = index;
+          $("#ws" + WS).html(
+            "<div>" +
+              index +
+              "</div><img src='images/balls/blue.png' width='60'/>"
+          );
+          WS++;
+        } else if (W < WaitingNum) {
+          //存放此球是否有分隔線的狀態
+          if (
+            $(this)
+              .html()
+              .search(/separator/i) != -1
+          )
+            hasSeparator = true;
+          $("#" + N).html(
+            "<div class='no'>" +
+              sort +
+              "</div><div class='ball'>" +
+              index +
+              "</div><img src='images/balls/pink.png' width='" +
+              width +
+              "'/>"
+          );
+          ckCnt[N] = "Y";
+          wsOK[QualifyNum + W] = index;
+          font = WaitingSort(W);
+          $("#w" + W).html(
+            "<div>" +
+              index +
+              "</div><img src='images/balls/pink.png' width='80'/><span>" +
+              font +
+              "</span>"
+          );
+          W++;
+        }
+      }
+      $("#Area2 ul li div.ball").css("font-size", size + "%");
+      $("#Area2 ul li div.ball").css("width", width + "px");
+      $("#Area2 ul li div.ball").css("height", width + "px");
+      $("#Area2 ul li div.ball").css("line-height", width + "px");
+
+      //若此球有分隔線，要補回
+      if (hasSeparator)
+        $("#" + N).append(
+          '<span><img src="images/separator.png" width="160"></span>'
+        );
+      console.log("wsOK" + wsOK);
+      displayPeople();
+    }
+  });
+
+  /*
+    //改變號碼顏色 - right button of button mouse
+    $("#UL2").delegate('li', 'mousedown', function (event) {
+      if (event.button == 2) {
+        if (QualifyNum == Q && WaitingNum == W)
+            alert("選任人數已滿");
+        else {
+          sort = $(this).prop("name");
+          N = $(this).attr("id");
+          index = parseInt(N) + 1;
+
+          if (isNaN(index)) return; //如果還沒抽籤，就不能改變號碼顏色
+
+          if (ckCnt[N] == "B") {
+            $("#" + N).html("<div class='no'>" + sort + "</div><div class='ball'><div class='white'>" + index + "</div></div><img src='images/balls/yellow.png' width='" + width + "'/>");
+            // $("#Area2 ul li div.white").css("font-weight", "bold");
+            // $("#Area2 ul li div.white").css("color", "blue");
+            $("#Area2 ul li div.white").css("font-weight", "normal");
+            $("#Area2 ul li div.white").css("color", "DarkSlateGray");
+            $("#Area2 ul li div.white").css("width", width + "px");
+            $("#Area2 ul li div.white").css("height", width + "px");
+            $("#Area2 ul li div.white").css("line-height", width + "px");
+          }
+        }
+      }
+    });
+  */
+
+  // 拒卻 - right button of button mouse
+  $("#UL2").delegate("li", "mousedown", function (event) {
+    console.log("#UL2 click");
+    var hasSeparator = false; //用來存放該球是有分隔線(每列第4球有分隔線)
+    if (event.button == 2) {
+      sort = $(this).prop("name"); // sort為新編號
+      N = $(this).attr("id");
+      index = parseInt(N) + 1; // index為舊編號
+
+      if (isNaN(index)) return; //如果還沒抽籤，就不能拒卻
+
+      if (ckCnt[N] == "B") {
+        //存放此球是否有分隔線的狀態
+        if (
+          $(this)
+            .html()
+            .search(/separator/i) != -1
+        )
+          hasSeparator = true;
+
+        // toggle 置換圖片
+        if (
+          $(this)
+            .html()
+            .search(/ball_mask/i) == -1
+        ) {
+          // 置換圖片
+          $("#" + N).html(
+            "<div class='no'>" +
+              sort +
+              "</div><div class='ball'><div class='white'>" +
+              index +
+              "</div></div><img src='images/balls/ball_mask.png' width='" +
+              width +
+              "'/>"
+          );
+          // $("#Area2 ul li div.white").css("font-weight", "bold");
+          // $("#Area2 ul li div.white").css("color", "blue");
+          /*
+            $("#Area2 ul li div.white").css("font-weight", "normal");
+            $("#Area2 ul li div.white").css("color", "DarkSlateGray");
+            $("#Area2 ul li div.white").css("width", width + "px");
+            $("#Area2 ul li div.white").css("height", width + "px");
+            $("#Area2 ul li div.white").css("line-height", width + "px");
+            */
+          $(this).find(".white").css("font-weight", "normal");
+          $(this).find(".white").css("color", "DarkSlateGray");
+          $(this)
+            .find(".white")
+            .css("width", width + "px");
+          $(this)
+            .find(".white")
+            .css("height", width + "px");
+          $(this)
+            .find(".white")
+            .css("line-height", width + "px");
+        } else {
+          // 換回正常圖片
+          if (sort <= InterrogaNum) ball = "yellow.png";
+          //顯示候選結果區的球
+          else if (sort > InterrogaNum && sort <= InterrogaNum + Shadow1Num)
+            ball = "red.png";
+          //顯示影子團1候選球
+          else ball = "green.png"; //顯示影子團2候選球
+
+          $("#" + N).html(
+            "<div class='no'>" +
+              sort +
+              "</div><div class='ball'>" +
+              index +
+              "</div><img src='images/balls/" +
+              ball +
+              "' width='" +
+              width +
+              "'/>"
+          );
+          /*
+            $("#Area2 ul li div.ball").css("font-weight", "bold");
+            $("#Area2 ul li div.ball").css("font-size", "200%");
+            $("#Area2 ul li div.ball").css("color", "blue");
+            $("#Area2 ul li div.ball").css("width", width + "px");
+            $("#Area2 ul li div.ball").css("height", width + "px");
+            $("#Area2 ul li div.ball").css("line-height", width + "px");
+            */
+          $(this).find(".ball").css("font-weight", "bold");
+          $(this).find(".ball").css("font-size", "200%");
+          $(this).find(".ball").css("color", "blue");
+          $(this)
+            .find(".ball")
+            .css("width", width + "px");
+          $(this)
+            .find(".ball")
+            .css("height", width + "px");
+          $(this)
+            .find(".ball")
+            .css("line-height", width + "px");
+        }
+
+        //若此球有分隔線，要補回
+        if (hasSeparator)
+          $("#" + N).append(
+            '<span><img src="images/separator.png" width="160"></span>'
+          );
+
+        //每一次拒卻，都檢查是否需要加抽？如果需加抽，則顯示btnMore加抽按鈕 -- 1070415
+        if (checkNeedMore() && counter < maxNum) {
+          jQuery("#btnMore").show(); //此版本有分隔線，因此有24個空白球的限制
+          jQuery("#btnMore").css("background-color", "yellow");
+        }
+        //否則不顯示btnMore加抽按鈕
+        else jQuery("#btnMore").hide();
+
+        displayPeople();
+      }
+    }
+  });
+
+  //取消待選區號碼
+  $("#Area31").delegate("li", "click", function () {
+    console.log("#Area31 Click");
+    var hasSeparator = false; //用來存放該球是有分隔線(每列第4球有分隔線)
+    index = $(this).text();
+    id = $(this).attr("id");
+    N = parseInt(index) - 1;
+    sort = parseInt($("#" + N).prop("name"));
+
+    if (sort <= InterrogaNum) ball = "yellow.png";
+    else if (sort > InterrogaNum && sort <= InterrogaNum + Shadow1Num)
+      ball = "red.png";
+    else ball = "red.png";
+
+    //存放此球相對在候選區的球是否有分隔線的狀態
+    if (
+      $("#" + N)
+        .html()
+        .search(/separator/i) != -1
+    )
+      hasSeparator = true;
+    $("#" + N).html(
+      "<div class='no'>" +
+        sort +
+        "</div><div class='ball'>" +
+        index +
+        "</div><img src='images/balls/" +
+        ball +
+        "' width='" +
+        width +
+        "'/>"
+    );
+    //若候選區的球有分隔線，要補回
+    if (hasSeparator)
+      $("#" + N).append(
+        '<span><img src="images/separator.png" width="80"></span>'
+      );
+
+    $("#Area31 ul li div.ball")
+      .eq(sort - 1)
+      .css("color", "DarkSlateGray");
+    $("#Area31 ul li div.ball").css("font-size", size + "%");
+    $("#Area31 ul li div.ball").css("width", width + "px");
+    $("#Area31 ul li div.ball").css("height", width + "px");
+    $("#Area31 ul li div.ball").css("line-height", width + "px");
+    ckCnt[parseInt(index) - 1] = "B";
+    wsOK[id.substr(1, 1)] = 0;
+    WS--;
+
+    //拒却
+    if (!deny.find((element) => element == index)) deny.push(index);
+    console.log("deny:" + deny);
+    WSSort(index, id);
+    console.log("wsOK:" + wsOK);
+    displayPeople();
+  });
+
+  //取消正取號碼
+  $("#Qualify").delegate("li", "click", function () {
+    var hasSeparator = false; //用來存放該球是有分隔線(每列第4球有分隔線)
+    index = $(this).text();
+    id = $(this).attr("id");
+    N = parseInt(index) - 1;
+    sort = parseInt($("#" + N).prop("name"));
+
+    if (sort <= InterrogaNum) ball = "yellow.png";
+    else if (sort > InterrogaNum && sort <= InterrogaNum + Shadow1Num)
+      ball = "red.png";
+    else ball = "green.png";
+
+    //存放此球相對在候選區的球是否有分隔線的狀態
+    if (
+      $("#" + N)
+        .html()
+        .search(/separator/i) != -1
+    )
+      hasSeparator = true;
+    $("#" + N).html(
+      "<div class='no'>" +
+        sort +
+        "</div><div class='ball'>" +
+        index +
+        "</div><img src='images/balls/" +
+        ball +
+        "' width='" +
+        width +
+        "'/>"
+    );
+    //若候選區的球有分隔線，要補回
+    if (hasSeparator)
+      $("#" + N).append(
+        '<span><img src="images/separator.png" width="160"></span>'
+      );
+
+    $("#Area2 ul li div.ball")
+      .eq(sort - 1)
+      .css("color", "DarkSlateGray");
+    $("#Area2 ul li div.ball").css("font-size", size + "%");
+    $("#Area2 ul li div.ball").css("width", width + "px");
+    $("#Area2 ul li div.ball").css("height", width + "px");
+    $("#Area2 ul li div.ball").css("line-height", width + "px");
+    ckCnt[parseInt(index) - 1] = "B";
+    allOK[id.substr(1, 1)] = 0;
+    Q--;
+    reSort(index, id);
+
+    displayPeople();
+  });
+
+  //取消備位號碼
+  $("#Waiting").delegate("li", "click", function () {
+    var hasSeparator = false; //用來存放該球是有分隔線(每列第4球有分隔線)
+    index = $(this).text().substr(0, 2);
+    if (!$.isNumeric(index)) index = index.substr(0, 1);
+    id = $(this).attr("id");
+    N = parseInt(index) - 1;
+    sort = parseInt($("#" + N).prop("name"));
+
+    if (sort <= InterrogaNum) ball = "yellow.png";
+    else if (sort > InterrogaNum && sort <= InterrogaNum + Shadow1Num)
+      ball = "red.png";
+    else ball = "green.png";
+
+    //存放此球相對在候選區的球是否有分隔線的狀態
+    if (
+      $("#" + N)
+        .html()
+        .search(/separator/i) != -1
+    )
+      hasSeparator = true;
+    $("#" + N).html(
+      "<div class='no'>" +
+        sort +
+        "</div><div class='ball'>" +
+        index +
+        "</div><img src='images/balls/" +
+        ball +
+        "' width='" +
+        width +
+        "'/>"
+    );
+    //若候選區的球有分隔線，要補回
+    if (hasSeparator)
+      $("#" + N).append(
+        '<span><img src="images/separator.png" width="160"></span>'
+      );
+
+    $("#Area2 ul li div.ball")
+      .eq(sort - 1)
+      .css("color", "DarkSlateGray");
+    $("#Area2 ul li div.ball").css("font-size", size + "%");
+    $("#Area2 ul li div.ball").css("width", width + "px");
+    $("#Area2 ul li div.ball").css("height", width + "px");
+    $("#Area2 ul li div.ball").css("line-height", width + "px");
+    ckCnt[parseInt(index) - 1] = "B";
+    allOK[parseInt(id.substr(1, 1)) + QualifyNum] = 0;
+    W--;
+    reSort(index, id);
+
+    displayPeople();
+  });
+
+  function WSSort(index, id) {
+    var wNUM = 0;
+    var wOK = 0,
+      qOK = 0,
+      temp = 0,
+      ok = 0;
+    var i = id.replace("ws", "");
+    //for (i = 0; i < wsOK.length; i++) {
+    if (wsOK[i] != 0) {
+      if (qOK <= 16) {
+        $("#ws" + i).html(
+          "<div>" +
+            wsOK[i] +
+            "</div><img src='images/balls/black.png' width='60'/>"
+        );
+        temp = wsOK[i];
+        wsOK[i] = 0;
+        //wsOK[ok] = temp;
+        qOK++;
+        if (ckCnt[parseInt(temp) - 1] != "P") {
+          ckCnt[parseInt(temp) - 1] = "P";
+          sort = $("#" + (parseInt(temp) - 1)).prop("name");
+          $("#" + (parseInt(temp) - 1)).html(
+            "<div class='no'>" +
+              sort +
+              "</div><div class='ball'>" +
+              temp +
+              "</div><img src='images/balls/red.png' width='" +
+              width +
+              "'/>"
+          );
+        }
+      }
+      ok++;
+    }
+    //}
+  }
+
+  function reSort(index, id) {
+    var wNUM = 0;
+    var wOK = 0,
+      qOK = 0,
+      temp = 0,
+      ok = 0;
+    for (i = 0; i < allOK.length; i++) {
+      if (allOK[i] != 0) {
+        if (qOK < QualifyNum) {
+          $("#s" + qOK).html(
+            "<div>" +
+              allOK[i] +
+              "</div><img src='images/balls/blue.png' width='80'/>"
+          );
+          temp = allOK[i];
+          allOK[i] = 0;
+          allOK[ok] = temp;
+          qOK++;
+          if (ckCnt[parseInt(temp) - 1] != "P") {
+            ckCnt[parseInt(temp) - 1] = "P";
+            sort = $("#" + (parseInt(temp) - 1)).prop("name");
+            $("#" + (parseInt(temp) - 1)).html(
+              "<div class='no'>" +
+                sort +
+                "</div><div class='ball'>" +
+                temp +
+                "</div><img src='images/balls/blue.png' width='" +
+                width +
+                "'/>"
+            );
+            $("#Area2 ul li div.ball").css("font-size", size + "%");
+            $("#Area2 ul li div.ball").css("width", width + "px");
+            $("#Area2 ul li div.ball").css("height", width + "px");
+            $("#Area2 ul li div.ball").css("line-height", width + "px");
+            $("#Area2 ul li div .white").css("width", width + "px");
+            $("#Area2 ul li div .white").css("height", width + "px");
+            $("#Area2 ul li div .white").css("line-height", width + "px");
+          }
+        } else {
+          font = WaitingSort(wOK);
+          $("#w" + wOK).html(
+            "<div>" +
+              allOK[i] +
+              "</div><img src='images/balls/pink.png' width='80'/><span>" +
+              font +
+              "</span>"
+          );
+          temp = allOK[i];
+          allOK[i] = 0;
+          allOK[ok] = temp;
+          wOK++;
+        }
+        ok++;
+      }
+    }
+    Q = qOK;
+    W = wOK;
+    for (i = 0; i < allOK.length; i++) {
+      if (allOK[i] == 0) {
+        if (qOK < QualifyNum) {
+          $("#s" + qOK).html(
+            "<div></div><img src='images/balls/black.png' width='80'/>"
+          );
+          qOK++;
+        } else {
+          font = WaitingSort(wOK);
+          $("#w" + wOK).html(
+            "<div></div><img src='images/balls/black.png' width='80'/><span>" +
+              font +
+              "</span>"
+          );
+          wOK++;
+        }
+      }
+    }
+  }
+  function WaitingSort(font) {
+    switch (font) {
+      case 0:
+        font = "備位一";
+        break;
+      case 1:
+        font = "備位二";
+        break;
+      case 2:
+        font = "備位三";
+        break;
+      case 3:
+        font = "備位四";
+        break;
+    }
+    return font;
+  }
+
+  //配合第二輪抽籤按鈕用 - 1070405
+  function stopTimer(voice) {
+    //暫停抽籤
+    if (voice) playSpeech(jQuery("#btnStop > h2").html()); //說出按鈕名稱
+    go = false;
+    tm1 = 0;
+    jQuery("#btnStart > h2").html("繼續抽籤");
+    jQuery("#btnStart").prop("disabled", false);
+    jQuery("#btnStop").prop("disabled", true);
+  }
+
+  function startTimer(voice) {
+    //開始抽籤
+    if (voice) playSpeech(jQuery("#btnStart > h2").html()); //說出按鈕名稱
+    go = true;
+    ranNum();
+    jQuery("#btnStart").prop("disabled", true);
+    jQuery("#btnStop").prop("disabled", false);
+  }
+
+  function checkNeedMore() {
+    //檢查是否需要加抽？
+    denyNum = 0; //被拒卻人數，為全域人數
+    for (var i = 0; i < cnt; i++) {
+      //累計拒卻人數
+      if (typeof $("#Area2 ul li div.white").eq(i).html() != "undefined")
+        denyNum++;
+    }
+    //AllNum為正取人數+備位人數
+    if (cnt - denyNum < AllNum) return true;
+    //需要加抽
+    else return false; //不需要加抽
+  }
+
+  function enableMoreTimer(voice) {
+    //當拒卻太多，致使抽選名額不足時，啟動加抽用
+    if (voice) playSpeech(jQuery("#btnMore > h2").html()); //說出按鈕名稱
+    jQuery("#btnMore").hide(); //每次加抽後，就不顯示
+    /*
+        if (arrLen > counter) { //尚可抽籤時
+        extra = (arrLen - counter)>extra?extra:(arrLen - counter); // extra為每次加抽名額(這次增加4名或最多可再增加的名額)
+        */
+    //此版本為每列前4個球後，有1個分隔線，每列最多8個球，因此最多只能畫24個空白球
+    if (counter < maxNum) {
+      //尚可抽籤時
+      extra = maxNum - counter > extra ? extra : maxNum - counter; // extra為每次加抽名額(這次增加4名或最多可再增加的名額)
+      //jQuery("#btnStart > h2").html("進行加抽"); //設定2次抽籤按鈕
+      pick = (parseInt(cnt) + extra).toString(); //重新修正抽選數
+      cnt = (parseInt(cnt) + extra).toString(); //重新修正抽選數
+      if (Shadow1Num == 0) {
+        //第1次加抽
+        Shadow1Num = extra; //更新Shadow1Num變數
+        drawBlankBall(true); //畫第1次加抽空白球 - 紅球
+      } else {
+        //第2次或以上加抽
+        //initialShadow2 = Shadow2Num; //第2次或以上每次加抽時，存放Shadow2Num的初始值
+        Shadow2Num += extra; //更新Shadow2Num變數
+        drawBlankBall(false); //畫第2次或以上加抽空白球 - 綠球
+      }
+      //stopTimer(false); //不要自動加抽，且不播語音
+      startTimer(false); //自動開始加抽，但不播語音
+    } else finishWork(true, "加抽結束");
+  }
+
+  function drawBlankBall(bool) {
+    //擴充arrRand陣列及lots陣列
+    for (var i = arrRand.length; i < cnt; i++) {
+      arrRand[i] = ""; //初始值為""
+      lots[i] = arrSelect[arrRand[i]]; //初始值為undefined
+    }
+
+    //顯示候選球
+    for (var i = counter; i < counter + extra; i++) {
+      index = parseInt(lots[i]) + 1;
+      s = document.getElementById("UL2");
+      li = document.createElement("li");
+      s.appendChild(li);
+      if (bool) {
+        ball = "red.png"; //顯示初次加抽候選球
+        document.getElementById("caption").style.backgroundImage =
+          "url('images/caption1.png')";
+      } else {
+        ball = "green.png"; //顯示2次或以上加抽候選球
+        document.getElementById("caption").style.backgroundImage =
+          "url('images/caption.png')";
+      }
+      //尚未抽籤時，不要在抽籤結果區show號碼
+      // li.innerHTML = "<div class='no'>"+(parseInt(i)+1)+"</div><div class='ball'><div class='ball'>" + index + "</div></div><img src='images/balls/" + ball + "' width='" + width + "'/>";
+      li.innerHTML =
+        "<div class='no'>" +
+        (parseInt(i) + 1) +
+        "</div><div class='ball'><div class='ball'>" +
+        "" +
+        "</div></div><img src='images/balls/" +
+        ball +
+        "' width='" +
+        width +
+        "'/>";
+      li.id = lots[i];
+      li.name = parseInt(i) + 1;
+      ckCnt[lots[i]] = "B";
+
+      //加抽時，每列的前4個球添加1條分隔線，因為每4個人一批進行詢問
+      if (i % 8 == 3)
+        li.insertAdjacentHTML(
+          "beforeend",
+          '<span><img src="images/separator.png" width="160"></span>'
+        );
+    }
+
+    $("#Area2 ul li div.ball").css("font-size", size + "%");
+    $("#Area2 ul li div.ball").css("width", width + "px");
+    $("#Area2 ul li div.ball").css("height", width + "px");
+    $("#Area2 ul li div.ball").css("line-height", width + "px");
+  }
+
+  function finishWork(voice, data) {
+    if (voice) playSpeech(data); //播放語音
+    go = false;
+    tm1 = 0;
+    jQuery("#btnStart").prop("disabled", true);
+    jQuery("#btnStop").prop("disabled", true);
+    displayPeople();
+  }
+
+  function playSpeech(data) {
+    // 增加語音播放號碼功能 -- 1070405
+    if ("speechSynthesis" in window) {
+      // Synthesis support. Make your web apps talk!
+      var msg = new SpeechSynthesisUtterance(data);
+      window.speechSynthesis.speak(msg);
+    }
+  }
+
+  function displayPeople() {
+    // 在上頭顯示狀態變化
+    var msg = "";
+    //應到人數，報到人數
+    msg += "應到" + field + "位，報到" + arrLen + "位";
+    //抽選人數
+    if (counter > 0) {
+      document.getElementById("arrived").innerHTML = counter; // 在結果區顯示抽選人數
+      msg += "，抽選" + counter + "位";
+    }
+    //拒卻人數
+    if (denyNum > 0) {
+      msg += "，拒卻" + denyNum + "位";
+    }
+    //正取人數
+    if (Q > 0) {
+      msg += "，正取" + Q + "位";
+    }
+    //備位人數
+    if (W > 0) {
+      msg += "，備位" + W + "位";
+    }
+    msg += "。";
+    $("#people").html(msg);
+    $("#rejected").html(deny.length);
+  }
+  function resetArea31() {
+    //處理待選區，顯示空白球
+    for (k = 0; k < wsOK.length; k++) {
+      if (wsOK[k] !== 0) {
+        csOK.push(wsOK[k]);
+      }
+    }
+    $("#select32").html(csOK.length);
+    console.log("csOK:" + csOK);
+    for (k = 0; k < csOK.length; k++) {
+      if (csOK[k] !== 0) {
+        $("#cs" + k).html(
+          "<div>" +
+            csOK[k] +
+            "</div><img src='images/balls/blue.png' width='60'/>"
+        );
+      }
+    }
+    s = document.getElementById("UL31");
+    $("#UL31").find("li").remove();
+    for (i = 0; i < 16; i++) {
+      li = document.createElement("li");
+      li.innerHTML =
+        "<div></div><img src='images/balls/black.png' width='60' />";
+      s.appendChild(li);
+      li.id = "ws" + i;
+      wsOK[i] = 0;
+    }
+  }
+</script>

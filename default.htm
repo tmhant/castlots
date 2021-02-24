@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<title>初始設定</title>
+<link href="css/reset.css" rel="stylesheet" type="text/css" />
+<link href="css/index.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+    function MM_goToURL() { 		
+        //WriteToCookie();
+        document.cookie = "field" + "=" + document.getElementById("textfield").value;
+        document.cookie = "select0" + "=" + document.getElementById("select0").value;
+        document.cookie = "select1" + "=" + document.getElementById("select1").value;
+        document.cookie = "select2" + "=" + document.getElementById("select2").value;
+        document.cookie = "shadow1" + "=" + document.getElementById("shadow1").value;
+        document.cookie = "shadow2" + "=" + document.getElementById("shadow2").value;		
+        var i, args = MM_goToURL.arguments;
+        document.MM_returnValue = false;
+        for (i = 0; i < (args.length - 1) ; i += 2)
+            eval(args[i] + ".location='" + args[i + 1] + "'");
+    }
+    function delCookies()
+    {
+        var keys = document.cookie.match(/[^ =;]+(?=\=)/g);
+        if (keys) {
+            for (var i = keys.length; i--;)
+                document.cookie = keys[i] + '=0;expires=' + new Date(0).toUTCString();
+        }
+    }
+</script>
+</head>
+
+<body>
+<div id="login">
+  <table class="tabLogin">
+  <caption>初始設定</caption>	
+    <tr>
+      <td align="right">應到人數：</td>
+      <td><input name="textfield" type="text" id="textfield" value="0" /></td>
+    </tr>
+	<tr>
+      <td align="right">抽選個別訊問人數：</td>
+      <td><select name="select0" id="select0">
+			<option value="0">0 位</option>
+			<option value="1">1 位</option>
+            <option value="2">2 位</option>
+            <option value="3">3 位</option>
+            <option value="4">4 位</option>
+			<option value="5">5 位</option>
+			<option value="6">6 位</option>
+			<option value="7">7 位</option>
+			<option value="8">8 位</option>
+			<option value="9">9 位</option>			
+			<option value="10">10 位</option>			
+			<option value="11">11 位</option>			
+			<option value="12">12 位</option>			
+			<option value="13">13 位</option>			
+			<option value="14">14 位</option>			
+			<option value="15">15 位</option>			
+			<option value="16">16 位</option>			
+			<option value="17">17 位</option>			
+			<option value="18">18 位</option>			
+			<option value="19">19 位</option>			
+			<option value="20">20 位</option>			
+      </select></td>
+    </tr>
+	<tr>
+      <td align="right">正取人數：</td>
+      <td><select name="select1" id="select1">
+			  <option value="0">0 位</option>
+			  <option value="1">1 位</option>
+              <option value="2">2 位</option>
+              <option value="3">3 位</option>
+              <option value="4">4 位</option>
+			  <option value="5">5 位</option>
+			  <option value="6">6 位</option>
+			  <option value="7">7 位</option>
+			  <option value="8">8 位</option>			  
+			  <option value="9">9 位</option>			  
+      </select></td>
+    </tr>
+    <tr>
+      <td align="right">備位人數：</td>
+      <td><select name="select2" id="select2">
+			  <option value="0">0 位</option>
+			  <option value="1">1 位</option>
+              <option value="2">2 位</option>
+              <option value="3">3 位</option>
+              <option value="4">4 位</option>
+      </select></td>
+    </tr>
+	<tr>
+      <td align="right">第一影子團人數：</td>
+      <td><select name="shadow1" id="shadow1">
+			<option value="0">0 位</option>
+			<option value="1">1 位</option>
+            <option value="2">2 位</option>
+            <option value="3">3 位</option>
+            <option value="4">4 位</option>
+			<option value="5">5 位</option>
+			<option value="6">6 位</option>
+			<option value="7">7 位</option>
+			<option value="8">8 位</option>
+			<option value="9">9 位</option>			
+      </select></td>
+    </tr>
+	<tr>
+      <td align="right">第二影子團人數：</td>
+      <td><select name="shadow2" id="shadow2">
+			<option value="0">0 位</option>
+			<option value="1">1 位</option>
+            <option value="2">2 位</option>
+            <option value="3">3 位</option>
+            <option value="4">4 位</option>
+			<option value="5">5 位</option>
+			<option value="6">6 位</option>
+			<option value="7">7 位</option>
+			<option value="8">8 位</option>
+			<option value="9">9 位</option>			
+      </select></td>
+    </tr>
+    <tr>
+      <td height="40" colspan="2" align="center"><input name="button" type="submit" id="button" onclick="MM_goToURL('parent','index.htm');return document.MM_returnValue" value="確定" /></td>
+    </tr>
+  </table>
+
+</div>
+<div id="clear"></div>
+</body>
+</html>

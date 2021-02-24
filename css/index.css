@@ -1,0 +1,241 @@
+﻿@charset "utf-8";
+
+body{background-color:#4682b3;font-size:16px;letter-spacing:1pt; font-family:"微軟正黑體";}
+
+/*--- 初始設定 ---*/
+#login{
+	background:url(../images/login_bg.png) no-repeat 0 0;
+	width:440px;
+	height:360px;
+	margin:80px auto 10px auto;
+}
+#login .tabLogin{margin:0px auto 0px auto;}
+#login .tabLogin CAPTION{color:#5794c7; font-weight:bold; font-size:1.75em; padding:20px; letter-spacing:5pt;}
+#login .tabLogin th,#login .tabLogin td{padding:6px;}
+#login .tabLogin INPUT{width:112px; padding:3px;}
+#login .tabLogin SELECT{width:120px; padding:3px;}
+
+/*--- 頭部LOGO區- --*/
+#main{
+	background:url(../images/main_bg.jpg) no-repeat 0 0;
+	width:970px;
+	height:915px;
+	padding:0px;
+	margin:0px auto;
+	text-align:left;
+}
+#header{
+	height:105px;
+	width:970px;
+	margin:0px;
+	padding:0px;
+	position:relative;
+}
+#header .logo{
+	background:url(../images/logo.jpg) no-repeat 0 0;
+	height:85px;
+	width:320px;
+	display:block;
+	position:absolute;
+	top:13px;
+	left:13px;
+	text-indent:-1000em;
+}
+#header .total-people{
+	color:#000;	
+	display:block;
+	position:absolute;
+	top:68px;
+	left:114px;
+}
+#header .total-caption{
+	background:url(../images/caption.png) no-repeat 0 0; 
+	height:62px;
+	width:300px;
+	display:block;
+	position:absolute;
+	top:26px;
+	right:20px;
+	text-indent:-1000em;
+}
+
+/*--- 中間內容 ---*/
+#Container{
+	clear:both;
+	margin:0px auto;
+	padding:0px;
+	width:970px;
+	height:810px;
+	position:relative;
+}
+#Container .count{float:right; margin:12px 30px 0 0; color:#fff;}
+#Container .count2{float:right; margin:12px 30px 0 0; color:#fff;}
+#Container .count3{float:right; margin:30px 30px 0 0; color:#fff;width:100%;text-align:right;}
+
+/*--- 候選國民法官 第一頁 ---*/
+#Container #Area1 {
+	position:absolute;
+	width:926px;
+	height:420px;
+	top:10px;
+	left:20px;
+	background:url(../images/Area01.png) no-repeat 0 0;
+}
+#Container #Area1 ul{
+	width:890px; /* 此區塊的長寬必須固定 */
+	height:340px; /* 此區塊的長寬必須固定 */
+	margin:55px auto 0 auto; */
+}
+#Container #Area1 ul li{position:relative; float:left;}
+#Container #Area1 ul li div{ /* 球上的數字設定 */
+	position:absolute; top:0px; left:0px;text-align:center;cursor:pointer; color:#fff;
+	font-size:200%;
+	width:68px; /* 此寬必須與 html IMG 的寬相同 */
+	height:68px; /* 此高必須與 html IMG 的高相同 */
+	line-height:68px; /* 此行高必須與 html IMG 的高相同 */
+}
+#Container #Area1 ul li div.white{ /* 白球設定黑字 */
+	color:#000;
+}
+
+/*--- 待選任之候選國民法官 第二頁 ---*/
+#Container #Area2 {
+	position:absolute;
+	width:926px;
+	height:310px;
+	top:10px;
+	left:20px;
+	background:url(../images/Area02.png) no-repeat 0 0;
+}
+#Container #Area2 ul{
+	width:930px; /* 此區塊的長寬必須固定 */
+	height:340px; /* 此區塊的長寬必須固定 */
+	margin:50px 0px 50px 14px;
+}
+#Container #Area2 ul li{position:relative; float:left; padding-left:6px; padding-top:2px;}
+#Container #Area2 ul li div.ball{ /* 球上的數字設定 */
+	position:absolute; top:2px; left:6px;text-align:center;cursor:pointer; color:#fff;
+	font-size:200%;
+	width:54px; /* 此寬必須與 html IMG 的寬相同 */
+	height:54px; /* 此高必須與 html IMG 的高相同 */
+	line-height:54px; /* 此行高必須與 html IMG 的高相同 */
+}
+#Container #Area2 ul li div.no{ /* 球的順序編號 */
+	position:absolute; top:4px; left:2px;text-align:center;color:#000;
+	font-size:70%;
+	width:6px;
+	height:6px;
+	line-height:12px;
+	letter-spacing:normal;
+}
+#Container #Area2 ul li div .white{ /* 白球設定黑字 */
+	color:#000;
+}
+#Container #Area31 {
+	position:absolute;
+	width:460px;
+	height:310px;
+	top:310px;
+	left:20px;
+	background:url(../images/Area31.png) no-repeat 0 0;
+}
+#Container .Area31 ul li{position:relative; float:left; width:110px; height:62px;}
+#Container .Area31 ul li.txt{background:url(../images/txt_result1.png) no-repeat 0 0; width:35px; height:62px; text-indent:-1000em; margin:0px 10px;}
+#Container .Area31 ul li IMG{margin-left:20px;}
+#Container .Area31 ul li div{
+	position:absolute; top:0px;left:20px;text-align:center; cursor:pointer; color:#fff;
+	font-size:160%;
+	width:60px;
+	height:60px;
+	line-height:60px;
+}
+#Container #Area32 {
+	position:absolute;
+	width:460px;
+	height:310px;
+	top:310px;
+	left:485px;
+	background:url(../images/Area32.png) no-repeat 0 0;
+}
+#Container .Area32 ul li{position:relative; float:left; width:110px; height:62px;}
+#Container .Area32 ul li.txt{background:url(../images/txt_result1.png) no-repeat 0 0; width:35px; height:62px; text-indent:-1000em; margin:0px 10px;}
+#Container .Area32 ul li IMG{margin-left:20px;}
+#Container .Area32 ul li div{
+	position:absolute; top:0px;left:9px;text-align:center; cursor:pointer; color:#fff;
+	font-size:160%;
+	width:80px;
+	height:80px;
+	line-height:60px;
+}
+/*--- 正取 ---*/
+#Container .Result1{
+	position:absolute;
+	width:955px;
+	height:81px;
+	background-color:#000;
+	top:620px;
+	left:7px;
+}
+#Container .Result1 ul{
+	width:955px;
+	height:81px;
+	margin:0px auto;
+}
+#Container .Result1 ul li{position:relative; float:left; background:url(../images/ball_bg.png) no-repeat 0 0; width:100px; height:82px;}
+#Container .Result1 ul li.txt{background:url(../images/txt_result1.png) no-repeat 0 0; width:35px; height:82px; text-indent:-1000em; margin:0px 10px;}
+#Container .Result1 ul li IMG{margin-left:7px;}
+#Container .Result1 ul li div{
+	position:absolute; top:0px;left:7px;text-align:center; cursor:pointer; color:#fff;
+	font-size:260%;
+	width:80px;
+	height:80px;
+	line-height:80px;
+}
+
+/*--- 備位 ---*/
+#Container .Result2{
+	position:absolute;
+	width:955px;
+	height:81px;
+	background-color:#000;
+	top:701px;
+	left:7px;
+}
+#Container .Result2 ul{
+	width:955px;
+	height:81px;
+	margin:0px auto;
+}
+#Container .Result2 ul li{position:relative; float:left; background:url(../images/ball_bg.png) no-repeat 0 0; width:100px; height:82px;}
+#Container .Result2 ul li.txt{background:url(../images/txt_result2.png) no-repeat 0 0; width:35px; height:82px; text-indent:-1000em; margin:0px 10px;}
+#Container .Result2 ul li IMG{margin-left:7px;}
+#Container .Result2 ul li div{ 
+	position:absolute; top:0px;left:7px;text-align:center; cursor:pointer; color:#fff;
+	font-size:260%;
+	width:80px;
+	height:80px;
+	line-height:80px;
+}
+#Container .Result2 ul li span{font-size:15px; line-height:165%; color:#000; padding-left:23px; font-weight:bold;}
+
+/*--- 按鈕 ---*/
+#Container .btn{
+	position:absolute;
+	width:180px;
+	height:55px;
+	top:710px;
+	right:30px;
+}
+
+/*--- 加入虛擬內容 --- */
+#clear{clear: both;}
+
+/*---  底部  ---*/
+#footer{
+	padding:0px 0px 0px 25px;
+	margin:0px;
+	color:#fff;
+	font-size:13px;
+	width:945px;
+	margin:0px auto;
+}
