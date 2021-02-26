@@ -27,7 +27,7 @@
           >位，備位<span id="select2"></span>位<span id="shadow1"></span
           ><span id="shadow2"></span>。
         </div>
-
+        <input type="button" id="reset" value="重置" onclick="reset()" />
         <div class="total-caption" id="caption"></div>
       </div>
       <div id="Container">
@@ -460,6 +460,7 @@
   // 選取訊問號碼
   $("#Area2").delegate("li", "click", function () {
     var hasSeparator = false; //用來存放該球是有分隔線(每列第4球有分隔線)
+    console.log("allOK:" + allOK);
     if (getLength(allOK) > 0) {
       alert("選任已結束");
       return false;
@@ -767,9 +768,9 @@
 
     //拒却
     if (!deny31.find((element) => element == index)) deny31.push(index);
-    console.log("deny31:" + deny31);
+    console.log("待選區退却:" + deny31);
     WSSort(index, id);
-    console.log("wsOK:" + wsOK);
+    console.log("待選區OK:" + wsOK);
     displayPeople();
   });
 
@@ -824,9 +825,9 @@
 
       //拒却
       if (!deny32.find((element) => element == index)) deny32.push(index);
-      console.log("deny32:" + deny32);
+      console.log("已選局退却:" + deny32);
       CSSort(index, id);
-      console.log("csOK:" + csOK);
+      console.log("已選區OK:" + csOK);
       displayPeople();
     }
   });
@@ -1307,6 +1308,10 @@
       wsOK[i] = 0;
     }
     WS = 0;
+    $("#Area2 ul li div.ball").css("font-size", size + "%");
+    $("#Area2 ul li div.ball").css("width", width + "px");
+    $("#Area2 ul li div.ball").css("height", width + "px");
+    $("#Area2 ul li div.ball").css("line-height", width + "px");
   }
 
   function resetArea32() {
@@ -1344,9 +1349,64 @@
         }
       }
       if (getLength(allOK) > 0) {
-        $("#resetArea31").hide();
-        $("#resetArea32").hide();
+        $("#reset").prop("disabled", true);
+        $("#resetArea31").prop("disabled", true);
+        $("#resetArea32").prop("disabled", true);
       }
+    }
+    $("#Area2 ul li div.ball").css("font-size", size + "%");
+    $("#Area2 ul li div.ball").css("width", width + "px");
+    $("#Area2 ul li div.ball").css("height", width + "px");
+    $("#Area2 ul li div.ball").css("line-height", width + "px");
+  }
+
+  function reset() {
+    csOK = [];
+    allOK = [];
+    deny31 = [];
+    deny32 = [];
+    s = document.getElementById("#UL2");
+    for (i = 0; i < cnt; i++) {
+      if (lots[i] !== undefined) {
+        N = parseInt(lots[i]);
+        index = parseInt(lots[i]) + 1;
+        $("#" + N).html(
+          "<div class='no'>" +
+            (i + 1) +
+            "</div><div class='ball'>" +
+            index +
+            "</div><img src='images/balls/green.png' width='" +
+            width +
+            "'/>"
+        );
+        $("#Area2 ul li div.ball").eq(i).css("color", "indigo");
+        $("#Area2 ul li div.ball").eq(i).css("font-weight", "bold");
+      }
+      ckCnt[lots[i]] = "B";
+      $("#Area2 ul li div.ball").css("font-size", size + "%");
+      $("#Area2 ul li div.ball").css("width", width + "px");
+      $("#Area2 ul li div.ball").css("height", width + "px");
+      $("#Area2 ul li div.ball").css("line-height", width + "px");
+    }
+    s = document.getElementById("UL31");
+    $("#UL31").find("li").remove();
+    for (i = 0; i < 16; i++) {
+      li = document.createElement("li");
+      li.innerHTML =
+        "<div></div><img src='images/balls/black.png' width='60' />";
+      s.appendChild(li);
+      li.id = "ws" + i;
+      wsOK[i] = 0;
+    }
+    WS = 0;
+    s = document.getElementById("UL32");
+    $("#UL32").find("li").remove();
+    for (i = 0; i < 16; i++) {
+      li = document.createElement("li");
+      li.innerHTML =
+        "<div></div><img src='images/balls/black.png' width='60' />";
+      s.appendChild(li);
+      li.id = "cs" + i;
     }
   }
 </script>

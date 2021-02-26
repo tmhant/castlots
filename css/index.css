@@ -79,6 +79,7 @@ body {
   top: 26px;
   right: 20px;
   text-indent: -1000em;
+  display: none;
 }
 
 /*--- 中間內容 ---*/
@@ -376,6 +377,16 @@ body {
   height: 55px;
   top: 710px;
   right: 30px;
+}
+
+#reset {
+  height: 40px;
+  width: 80px;
+  display: block;
+  position: absolute;
+  top: 26px;
+  right: 20px;
+  border-radius: 10px;
 }
 
 /*--- 加入虛擬內容 --- */
